@@ -7,6 +7,8 @@
 **A fast, bilingual Telegram bot for prayer times, reminders, daily adhkar and Qibla.**
 **بوت تيليجرام سريع بلغتين: مواقيت الصلاة، تنبيهات، أذكار الصباح والمساء، واتجاه القبلة.**
 
+[![Open the bot](https://img.shields.io/badge/Telegram-Open%20the%20bot-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/AliSalahTimes_bot)
+
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![aiogram](https://img.shields.io/badge/aiogram-3.x-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
