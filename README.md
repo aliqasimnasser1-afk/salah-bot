@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/bot-icon.png" width="150" alt="Salah Bot icon" />
+
 # 🕌 Salah Bot | بوت مواقيت الصلاة
 
 **A fast, bilingual Telegram bot for prayer times, reminders, daily adhkar and Qibla.**
@@ -29,106 +31,3 @@
 | 📐 | Six calculation methods (Umm Al-Qura by default) | ست طرق حساب (أم القرى افتراضيًا) |
 | 🌐 | Full Arabic and English interface, switchable per user | واجهة عربية وإنجليزية كاملة لكل مستخدم |
 | 🌍 | Correct time zone per user, anywhere in the world | المنطقة الزمنية الصحيحة لكل مستخدم في أي مكان |
-
-## 🚀 Quick start | تشغيل سريع
-
-1. Create a bot with [@BotFather](https://t.me/BotFather) and copy the token.
-   أنشئ بوتًا من BotFather وانسخ التوكن.
-2. Configure:
-
-```bash
-cp .env.example .env      # then put your token in BOT_TOKEN
-```
-
-3. Run it, either way:
-
-```bash
-# Docker (recommended)
-docker compose up -d --build
-
-# or plain Python 3.11+
-python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-python -m bot
-```
-
-Open your bot in Telegram and send `/start`.
-
-## ⚙️ Configuration | الإعدادات
-
-| Variable | Default | Description |
-|---|---|---|
-| `BOT_TOKEN` | required | Token from @BotFather |
-| `DB_PATH` | `data/salah.db` | SQLite file (a Docker volume holds it) |
-| `DEFAULT_METHOD` | `4` | Calculation method for new users (4 = Umm Al-Qura) |
-| `PORT` | `8080` | Health-check port (`/health`) |
-| `ADMIN_IDS` | empty | Comma-separated Telegram IDs allowed to run `/stats` |
-
-## 🤖 Commands | الأوامر
-
-`/start` `/times` `/next` `/qibla` `/morning` `/evening` `/settings` `/help`
-
-## 🏗 How it works
-
-```
-Telegram ──► aiogram handlers ──► SQLite (users, sent notifications)
-                  │
-                  ├──► Aladhan API ──► prayer times + Hijri date + time zone
-                  ├──► Nominatim / Open-Meteo ──► city name → coordinates
-                  └──► qibla.py ──► bearing + distance (pure math)
-
-ReminderService (every 30 s)
-   └─ events.due_events()  pure function: which notifications are due now
-   └─ db.mark_sent()       INSERT OR IGNORE, so each one is sent exactly once
-```
-
-- **Exactly-once delivery:** each notification has a unique key per user per day; the key is written before sending, so a restart or overlapping tick never duplicates a message.
-- **Resilient:** a failing prayer-times service skips that tick and retries on the next one. Users who block the bot are removed automatically. Telegram rate limits are respected.
-- **Efficient:** timings are cached per rounded location, so thousands of users in the same city cost one API call.
-- **Private by design:** only a Telegram ID, a language, coordinates and settings are stored. No messages are logged.
-
-```
-bot/
-  main.py         startup, polling, graceful shutdown
-  handlers.py     commands, buttons, location input
-  reminders.py    background notification loop
-  events.py       pure scheduling logic
-  aladhan.py      prayer-times client + cache
-  geocode.py      city name to coordinates
-  regions.py      Saudi regions and cities for the setup menu
-  qibla.py        great-circle bearing and distance
-  adhkar.py       morning / evening adhkar
-  texts.py        Arabic and English strings
-  keyboards.py    inline keyboards
-  db.py           async SQLite layer
-  health.py       /health endpoint
-tests/            74 tests, including real handler flows with a fake Telegram session
-```
-
-## 🧪 Tests
-
-```bash
-pip install -r requirements-dev.txt
-pytest
-```
-
-The suite covers Qibla math, API parsing, the scheduling window, exactly-once delivery, the database, geocoder parsing, and end-to-end handler flows (location → times → settings) without touching the network.
-
-## ☁️ Hosting
-
-The bot uses long polling, so it needs a process that stays running.
-
-- **VPS / Oracle Cloud Always Free:** `docker compose up -d` — no sleeping, recommended.
-- **Render free tier:** the instance sleeps after 15 minutes without inbound HTTP traffic. Ping `/health` every 5 minutes (a scheduled GitHub Actions workflow works) to keep it awake.
-  The free tier also has an **ephemeral disk**: the SQLite file is wiped on every restart or redeploy, so users would have to set their city again. For persistent data use a VPS (or a paid Render disk).
-  `render.yaml` is included: *New > Blueprint*, pick this repo, and paste `BOT_TOKEN` when asked.
-
-## 📌 Notes
-
-- Prayer times come from the [Aladhan API](https://aladhan.com/prayer-times-api). Always verify against your local mosque or authority, especially near the start of Ramadan or in extreme latitudes.
-- City lookup uses OpenStreetMap Nominatim (rate-limited to one request per second, as its policy requires) with Open-Meteo as a fallback. For an ambiguous city name the bot shows what it found; sharing your location is always exact.
-- The adhkar are a short selection. For the complete collection see *Hisn al-Muslim*.
-
-## 📄 License
-
-MIT © Ali Qasim
