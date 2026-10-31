@@ -1,0 +1,11 @@
+# Render Blueprint. New + > Blueprint > pick this repository, then paste BOT_TOKEN when asked.
+services:
+  - type: web
+    name: salah-bot
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: BOT_TOKEN
+        sync: false   # you type it in the Render dashboard; it is never stored in this repository
